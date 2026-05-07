@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FitStats Pro — Ghost Busters</title>
+  <meta name="description" content="Statistical analysis dashboard for BodyFat dataset by Ghost Busters" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <script src="https://cdn.plot.ly/plotly-2.35.0.min.js"></script>
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+  <div class="dashboard">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <i class="fas fa-ghost logo-icon"></i>
+          <div>
+            <h1>FitStats Pro</h1>
+            <span class="team-name">Ghost Busters</span>
+          </div>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-item active" data-tab="overview"><i class="fas fa-table"></i><span>Data Overview</span></a>
+        <a href="#" class="nav-item" data-tab="graphs"><i class="fas fa-chart-bar"></i><span>Graphs</span></a>
+        <a href="#" class="nav-item" data-tab="descriptive"><i class="fas fa-chart-line"></i><span>Descriptive Stats</span></a>
+        <a href="#" class="nav-item" data-tab="distributions"><i class="fas fa-chart-area"></i><span>Distributions</span></a>
+        <a href="#" class="nav-item" data-tab="correlation"><i class="fas fa-project-diagram"></i><span>Correlation & Regression</span></a>
+        <a href="#" class="nav-item" data-tab="inference"><i class="fas fa-flask"></i><span>Inference</span></a>
+      </nav>
+      <div class="sidebar-footer">
+        <p>Probability &amp; Statistics</p>
+        <p>Spring 2026</p>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- ── Tab 1: Data Overview ── -->
+      <section class="tab-content active" id="tab-overview">
+        <div class="page-header"><h2><i class="fas fa-table"></i> Data Overview</h2><p>Explore the structure and distribution of the BodyFat dataset</p></div>
+        <div class="grid-2">
+          <div class="card" id="dataset-info-card"><div class="card-header"><h3>Dataset Information</h3></div><div class="card-body" id="dataset-info">Loading...</div></div>
+          <div class="card"><div class="card-header"><h3>Column Types</h3></div><div class="card-body" id="column-types">Loading...</div></div>
+        </div>
+        <div class="card mt"><div class="card-header"><h3>Feature Descriptions</h3></div><div class="card-body table-wrap" id="feature-descriptions">Loading...</div></div>
+        <div class="card mt"><div class="card-header"><h3>Data Preview (First 10 Rows)</h3></div><div class="card-body table-wrap" id="data-preview">Loading...</div></div>
+        <div class="card mt">
+          <div class="card-header"><h3>Frequency Distribution Table</h3></div>
+          <div class="card-body">
+            <div class="form-row">
+              <div class="form-group"><label>Variable</label><select id="freq-var"></select></div>
+              <div class="form-group"><label>Bins (numeric only)</label><input type="number" id="freq-bins" value="7" min="2" max="20" /></div>
+              <div class="form-group"><label>&nbsp;</label><button class="btn" onclick="loadFrequency()"><i class="fas fa-table"></i> Generate</button></div>
+            </div>
+            <div id="freq-table-container"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Tab 2: Graphs ── -->
+      <section class="tab-content" id="tab-graphs">
+        <div class="page-header"><h2><i class="fas fa-chart-bar"></i> Graphical Representation</h2><p>Visualize data through various chart types</p></div>
+        <div class="grid-2">
+          <!-- Histogram -->
+          <div class="card">
+            <div class="card-header"><h3>Histogram</h3></div>
+            <div class="card-body">
+              <div class="form-row"><div class="form-group"><label>Variable</label><select id="hist-var"></select></div>
+              <div class="form-group"><label>&nbsp;</label><button class="btn" onclick="plotHistogram()"><i class="fas fa-play"></i> Plot</button></div></div>
+              <div id="hist-chart" class="chart-container"></div>
+              <div id="hist-interp" class="interpretation-box" style="display:none"></div>
+            </div>
+          </div>
+          <!-- Scatter -->
+          <div class="card">
+            <div class="card-header"><h3>Scatter Plot</h3></div>
+            <div class="card-body">
+              <div class="form-row"><div class="form-group"><label>X Variable</label><select id="scatter-x"></select></div>
+              <div class="form-group"><label>Y Variable</label><select id="scatter-y"></select></div>
+              <div class="form-group"><label>&nbsp;</label><button class="btn" onclick="plotScatter()"><i class="fas fa-play"></i> Plot</button></div></div>
+              <div id="scatter-chart" class="chart-container"></div>
+              <div id="scatter-interp" class="interpretation-box" style="display:none"></div>
+            </div>
+          </div>
+          <!-- Bar -->
+          <div class="card">
+            <div class="card-header"><h3>Bar Chart</h3></div>
+            <div class="card-body">
+              <div class="form-row"><div class="form-group"><label>Categorical Variable</label><select id="bar-var"></select></div>
+              <div class="form-group"><label>&nbsp;</label><button class="btn" onclick="plotBar()"><i class="fas fa-play"></i> Plot</button></div></div>
+              <div id="bar-chart" class="chart-container"></div>
+              <div id="bar-interp" class="interpretation-box" style="display:none"></div>
+            </div>
+          </div>
+          <!-- Pie -->
+          <div class="card">
+            <div class="card-header"><h3>Pie Chart</h3></div>
+            <div class="card-body">
+              <div class="form-row"><div class="form-group"><label>Categorical Variable</label><select id="pie-var"></select></div>
+              <div class="form-group"><label>&nbsp;</label><button class="btn" onclick="plotPie()"><i class="fas fa-play"></i> Plot</button></div></div>
+              <div id="pie-chart" class="chart-container"></div>
+              <div id="pie-interp" class="interpretation-box" style="display:none"></div>
+            </div>
+          </div>
+        </div>
+        <!-- Box Plot full width -->
+        <div class="card mt">
+          <div class="card-header"><h3>Box Plot (EDA)</h3></div>
+          <div class="card-body">
+            <div class="form-row"><div class="form-group"><label>Variable</label><select id="box-var"></select></div>
+            <div class="form-group"><label>&nbsp;</label><button class="btn" onclick="plotBox()"><i class="fas fa-play"></i> Plot</button></div></div>
+            <div id="box-chart" class="chart-container"></div>
+            <div id="box-interpretation" class="interpretation-box"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Tab 3: Descriptive Statistics ── -->
+      <section class="tab-content" id="tab-descriptive">
+        <div class="page-header"><h2><i class="fas fa-chart-line"></i> Descriptive Statistics</h2><p>Measures of central tendency, dispersion, and shape</p></div>
+        <div class="card">
+          <div class="card-header"><h3>Select Variable</h3></div>
+          <div class="card-body">
+            <div class="form-row">
+              <div class="form-group"><label>Numeric Variable</label><select id="desc-var"></select></div>
+              <div class="form-group"><label>&nbsp;</label><button class="btn" onclick="loadDescriptive()"><i class="fas fa-calculator"></i> Calculate</button></div>
+            </div>
+          </div>
+        </div>
+        <div id="desc-results" class="mt"></div>
+      </section>
+
+      <!-- ── Tab 4: Distributions ── -->
+      <section class="tab-content" id="tab-distributions">
+        <div class="page-header"><h2><i class="fas fa-chart-area"></i> Probability Distributions</h2><p>Uniform and Normal distributions applied to dataset variables</p></div>
+        <div class="grid-2">
+          <!-- Uniform -->
+          <div class="card">
+            <div class="card-header"><h3>Uniform Distribution</h3></div>
+            <div class="card-body">
+              <div class="form-row"><div class="form-group"><label>Variable</label><select id="uniform-var"></select></div>
+              <div class="form-group"><label>&nbsp;</label><button class="btn" onclick="plotUniform()"><i class="fas fa-chart-area"></i> Compute</button></div></div>
+              <div id="uniform-chart" class="chart-container"></div>
+              <div id="uniform-stats" class="stats-output"></div>
+              <div id="uniform-interp" class="interpretation-box"></div>
+            </div>
+          </div>
+          <!-- Normal -->
+          <div class="card">
+            <div class="card-header"><h3>Normal Distribution</h3></div>
+            <div class="card-body">
+              <div class="form-row"><div class="form-group"><label>Variable</label><select id="normal-var"></select></div>
+              <div class="form-group"><label>&nbsp;</label><button class="btn" onclick="plotNormal()"><i class="fas fa-chart-area"></i> Compute</button></div></div>
+              <div id="normal-chart" class="chart-container"></div>
+              <div id="normal-stats" class="stats-output"></div>
+              <div id="normal-interp" class="interpretation-box"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Tab 5: Correlation & Regression ── -->
+      <section class="tab-content" id="tab-correlation">
+        <div class="page-header"><h2><i class="fas fa-project-diagram"></i> Correlation & Regression</h2><p>Measure associations and build predictive models</p></div>
+        <!-- Correlation Heatmap -->
+        <div class="card"><div class="card-header"><h3>Correlation Heatmap</h3></div>
+          <div class="card-body"><div id="heatmap-chart" class="chart-container" style="height:520px"></div><div id="heatmap-interp" class="interpretation-box"></div></div>
+        </div>
+        <!-- Pairwise Correlation -->
+        <div class="card mt">
+          <div class="card-header"><h3>Pairwise Correlation</h3></div>
+          <div class="card-body">
+            <div class="form-row">
+              <div class="form-group"><label>Variable 1</label><select id="corr-var1"></select></div>
+              <div class="form-group"><label>Variable 2</label><select id="corr-var2"></select></div>
+              <div class="form-group"><label>&nbsp;</label><button class="btn" onclick="computeCorrelation()"><i class="fas fa-calculator"></i> Compute</button></div>
+            </div>
+            <div id="corr-result" class="stats-output"></div>
+          </div>
+        </div>
+        <!-- Regression -->
+        <div class="card mt">
+          <div class="card-header"><h3>Linear Regression (OLS)</h3></div>
+          <div class="card-body">
+            <div class="form-row">
+              <div class="form-group"><label>Dependent (Y)</label><select id="reg-dep"></select></div>
+              <div class="form-group"><label>Independent (X)</label><select id="reg-indep"></select></div>
+              <div class="form-group"><label>Grouping Factor</label><select id="reg-cat"></select></div>
+              <div class="form-group"><label>&nbsp;</label><button class="btn" onclick="runRegression()"><i class="fas fa-chart-line"></i> Run</button></div>
+            </div>
+            <div id="reg-chart" class="chart-container"></div>
+            <div id="reg-results"></div>
+          </div>
+        </div>
+        <!-- Prediction -->
+        <div class="card mt">
+          <div class="card-header"><h3>Prediction</h3></div>
+          <div class="card-body">
+            <div class="form-row">
+              <div class="form-group"><label>Value of X</label><input type="number" id="pred-value" step="any" /></div>
+              <div class="form-group"><label>&nbsp;</label><button class="btn" onclick="runPrediction()"><i class="fas fa-bullseye"></i> Predict</button></div>
+            </div>
+            <div id="pred-results"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Tab 6: Inference ── -->
+      <section class="tab-content" id="tab-inference">
+        <div class="page-header"><h2><i class="fas fa-flask"></i> Statistical Inference</h2><p>Hypothesis testing and confidence intervals</p></div>
+        <!-- Hypothesis Testing -->
+        <div class="card">
+          <div class="card-header"><h3>Hypothesis Testing (One-Sample t-Test)</h3></div>
+          <div class="card-body">
+            <div class="form-row">
+              <div class="form-group"><label>Variable</label><select id="hyp-var"></select></div>
+              <div class="form-group"><label>Population Mean (μ₀)</label><input type="number" id="hyp-mu" step="any" value="20" /></div>
+              <div class="form-group"><label>Significance (α)</label><select id="hyp-alpha"><option value="0.01">0.01</option><option value="0.05" selected>0.05</option><option value="0.10">0.10</option></select></div>
+              <div class="form-group"><label>Alternative</label><select id="hyp-alt"><option value="two-sided">μ ≠ μ₀ (Two-sided)</option><option value="greater">μ > μ₀ (Right)</option><option value="less">μ < μ₀ (Left)</option></select></div>
+              <div class="form-group"><label>&nbsp;</label><button class="btn" onclick="runHypothesis()"><i class="fas fa-vial"></i> Test</button></div>
+            </div>
+            <div id="hyp-results"></div>
+          </div>
+        </div>
+        <!-- Confidence Interval -->
+        <div class="card mt">
+          <div class="card-header"><h3>Confidence Interval for the Mean</h3></div>
+          <div class="card-body">
+            <div class="form-row">
+              <div class="form-group"><label>Variable</label><select id="ci-var"></select></div>
+              <div class="form-group"><label>Confidence Level</label><select id="ci-alpha"><option value="0.01">99%</option><option value="0.05" selected>95%</option><option value="0.10">90%</option></select></div>
+              <div class="form-group"><label>&nbsp;</label><button class="btn" onclick="computeCI()"><i class="fas fa-ruler-combined"></i> Compute</button></div>
+            </div>
+            <div id="ci-results"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
