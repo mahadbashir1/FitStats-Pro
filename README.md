@@ -46,7 +46,7 @@ Make sure you have Python 3.8+ installed on your system.
 2. **Create a Virtual Environment (Optional but Recommended)**
    ```bash
    python -m venv venv
-   source venv/bin/activate  # On Windows use: venv\Scripts\activate
+   venv\Scripts\activate
    ```
 
 3. **Install Dependencies**
