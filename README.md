@@ -39,8 +39,8 @@ Make sure you have Python 3.8+ installed on your system.
 
 1. **Clone the Repository**
    ```bash
-   git clone <your-repo-url>
-   cd "Prob Project (Python)"
+   git clone https://github.com/mahadbashir1/FitStats-Pro
+   cd FitStats-Pro
    ```
 
 2. **Create a Virtual Environment (Optional but Recommended)**
