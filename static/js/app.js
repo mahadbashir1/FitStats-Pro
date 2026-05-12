@@ -77,10 +77,6 @@ async function loadColumns() {
   populateSelect("reg-indep", nc, idx(nc, "Abdomen"));             // Using Abdomen (strongest)
   populateSelect("reg-cat", cc, idx(cc, "Gender"));                   // Group by Gender
 
-  // Tab 6: Inference
-  populateSelect("hyp-var", nc, idx(nc, "BodyFat"));               // Test mean BodyFat
-  populateSelect("ci-var", nc, idx(nc, "BodyFat"));                // CI for mean BodyFat
-
   // Tab 1: Frequency table — all analysis columns (excludes Original)
   populateSelect("freq-var", all, idx(all, "BodyFat"));
 }
@@ -364,39 +360,4 @@ async function runPrediction() {
     <div class="interpretation-box mt">${d.interpretation}</div>`;
 }
 
-// ── Tab 6: Inference ────────────────────────────────────────
-async function runHypothesis() {
-  const v = document.getElementById("hyp-var").value;
-  const mu = parseFloat(document.getElementById("hyp-mu").value);
-  const alpha = parseFloat(document.getElementById("hyp-alpha").value);
-  const alt = document.getElementById("hyp-alt").value;
-  const d = await api("/api/hypothesis", { method: "POST", body: { variable: v, mu, alpha, alternative: alt } });
-  const ci = d.confidence_interval;
-  document.getElementById("hyp-results").innerHTML = `
-    <div class="hypothesis-steps">
-      <div class="step"><div class="step-title">Step 1: Hypotheses</div><div class="step-content">${d.h0}<br>${d.h1}</div></div>
-      <div class="step"><div class="step-title">Step 2: Significance Level</div><div class="step-content">α = ${d.alpha}</div></div>
-      <div class="step"><div class="step-title">Step 3: Test Statistic</div>
-        <div class="step-content">n = ${d.n}, x̄ = ${d.mean}, s = ${d.std}, SE = ${d.se}<br>t(${d.df}) = ${d.t_statistic}</div></div>
-      <div class="step"><div class="step-title">Step 4: Critical Region</div>
-        <div class="step-content">Critical value = ${d.critical_value}, p-value = ${d.p_value}</div></div>
-      <div class="step"><div class="step-title">Step 5: Conclusion</div>
-        <div class="step-content"><span class="result-badge ${d.reject ? "reject" : "fail"}">${d.reject ? "Reject H₀" : "Fail to Reject H₀"}</span>
-          <p style="margin-top:8px">${d.conclusion}</p></div></div>
-      <div class="step"><div class="step-title">${ci.level}% Confidence Interval</div>
-        <div class="step-content">[${ci.lower}, ${ci.upper}]</div></div>
-    </div>
-    <div class="interpretation-box">${d.interpretation}</div>`;
-}
 
-async function computeCI() {
-  const v = document.getElementById("ci-var").value;
-  const alpha = parseFloat(document.getElementById("ci-alpha").value);
-  const d = await api("/api/confidence/mean", { method: "POST", body: { variable: v, alpha } });
-  document.getElementById("ci-results").innerHTML = `
-    <div class="stat-grid mt">
-      ${statBox("Mean", d.mean)}${statBox("Std Dev", d.std)}${statBox("Std Error", d.se)}
-      ${statBox("t Critical", d.t_critical)}${statBox("CI Lower", d.ci_lower)}${statBox("CI Upper", d.ci_upper)}
-    </div>
-    <div class="interpretation-box mt">${d.interpretation}</div>`;
-}

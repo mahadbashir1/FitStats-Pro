@@ -30,7 +30,6 @@
         <a href="#" class="nav-item" data-tab="descriptive"><i class="fas fa-chart-line"></i><span>Descriptive Stats</span></a>
         <a href="#" class="nav-item" data-tab="distributions"><i class="fas fa-chart-area"></i><span>Distributions</span></a>
         <a href="#" class="nav-item" data-tab="correlation"><i class="fas fa-project-diagram"></i><span>Correlation & Regression</span></a>
-        <a href="#" class="nav-item" data-tab="inference"><i class="fas fa-flask"></i><span>Inference</span></a>
       </nav>
       <div class="sidebar-footer">
         <p>Probability &amp; Statistics</p>
@@ -210,36 +209,6 @@
         </div>
       </section>
 
-      <!-- ── Tab 6: Inference ── -->
-      <section class="tab-content" id="tab-inference">
-        <div class="page-header"><h2><i class="fas fa-flask"></i> Statistical Inference</h2><p>Hypothesis testing and confidence intervals</p></div>
-        <!-- Hypothesis Testing -->
-        <div class="card">
-          <div class="card-header"><h3>Hypothesis Testing (One-Sample t-Test)</h3></div>
-          <div class="card-body">
-            <div class="form-row">
-              <div class="form-group"><label>Variable</label><select id="hyp-var"></select></div>
-              <div class="form-group"><label>Population Mean (μ₀)</label><input type="number" id="hyp-mu" step="any" value="20" /></div>
-              <div class="form-group"><label>Significance (α)</label><select id="hyp-alpha"><option value="0.01">0.01</option><option value="0.05" selected>0.05</option><option value="0.10">0.10</option></select></div>
-              <div class="form-group"><label>Alternative</label><select id="hyp-alt"><option value="two-sided">μ ≠ μ₀ (Two-sided)</option><option value="greater">μ > μ₀ (Right)</option><option value="less">μ < μ₀ (Left)</option></select></div>
-              <div class="form-group"><label>&nbsp;</label><button class="btn" onclick="runHypothesis()"><i class="fas fa-vial"></i> Test</button></div>
-            </div>
-            <div id="hyp-results"></div>
-          </div>
-        </div>
-        <!-- Confidence Interval -->
-        <div class="card mt">
-          <div class="card-header"><h3>Confidence Interval for the Mean</h3></div>
-          <div class="card-body">
-            <div class="form-row">
-              <div class="form-group"><label>Variable</label><select id="ci-var"></select></div>
-              <div class="form-group"><label>Confidence Level</label><select id="ci-alpha"><option value="0.01">99%</option><option value="0.05" selected>95%</option><option value="0.10">90%</option></select></div>
-              <div class="form-group"><label>&nbsp;</label><button class="btn" onclick="computeCI()"><i class="fas fa-ruler-combined"></i> Compute</button></div>
-            </div>
-            <div id="ci-results"></div>
-          </div>
-        </div>
-      </section>
     </main>
   </div>
   <script src="/static/js/app.js"></script>
