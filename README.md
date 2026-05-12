@@ -28,10 +28,6 @@
 *   **Pairwise Correlation testing:** Performs significance checks (p-values) for Pearson corellations.
 *   **Multivariate OLS Regression:** Model variables predicting body fat. Formulates Ordinary Least Squares estimates utilizing constants and dummy categorical variables. Displays $R^2$, F-statistics, intervals, and categorical prediction tools.
 
-### 6. Inferential Statistics
-*   **Hypothesis Testing:** Run interactive single-sample t-tests (One-Sided/Two-Sided) against specified null hypothesis parameters directly in the user interface.
-*   **Confidence Intervals:** Construct statistical confidence intervals for the population mean of physical metrics. 
-
 ## 🛠️ Setup Instructions
 
 ### Prerequisites
