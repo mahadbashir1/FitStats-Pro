@@ -73,9 +73,7 @@ async function loadColumns() {
   // Tab 5: Correlation & Regression
   populateSelect("corr-var1", nc, idx(nc, "Abdomen"));             // Known strong predictor
   populateSelect("corr-var2", nc, idx(nc, "BodyFat"));             // Target
-  populateSelect("reg-dep", nc, idx(nc, "BodyFat"));               // Predict BodyFat
   populateSelect("reg-indep", nc, idx(nc, "Abdomen"));             // Using Abdomen (strongest)
-  populateSelect("reg-cat", cc, idx(cc, "Gender"));                   // Group by Gender
 
   // Tab 1: Frequency table — all analysis columns (excludes Original)
   populateSelect("freq-var", all, idx(all, "BodyFat"));
@@ -318,45 +316,43 @@ async function computeCorrelation() {
 async function runRegression() {
   const dep = document.getElementById("reg-dep").value;
   const indep = document.getElementById("reg-indep").value;
-  const cat = document.getElementById("reg-cat").value;
-  const d = await api("/api/regression", { method: "POST", body: { dependent: dep, independent: indep, categorical: cat } });
+  const d = await api("/api/regression", { method: "POST", body: { dependent: dep, independent: indep } });
   if (d.error) { alert(d.error); return; }
-  // Scatter + regression line
-  Plotly.newPlot("reg-chart", [{
+  const traces = [];
+  traces.push({
     x: d.x_values, y: d.actual, mode: "markers", type: "scatter", name: "Actual",
     marker: { color: "#6366f1", size: 5, opacity: 0.6 },
-  }, {
-    x: d.x_values, y: d.predicted, mode: "markers", type: "scatter", name: "Predicted",
-    marker: { color: "#ef4444", size: 4, opacity: 0.5, symbol: "x" },
-  }], { ...PLOTLY_LAYOUT,
-    title: { text: `Regression: ${dep} ~ ${indep} + ${cat}`, font: { size: 16, color: "#f1f5f9" } },
+  });
+  
+  const pts = d.x_values.map((x, i) => ({ x, y: d.predicted[i] })).sort((a, b) => a.x - b.x);
+  traces.push({
+    x: pts.map(p => p.x),
+    y: pts.map(p => p.y),
+    mode: "lines",
+    type: "scatter",
+    name: "Predicted",
+    line: { color: "#ef4444", width: 2 },
+  });
+
+  Plotly.newPlot("reg-chart", traces, { ...PLOTLY_LAYOUT,
+    title: { text: `Regression: ${dep} ~ ${indep}`, font: { size: 16, color: "#f1f5f9" } },
     xaxis: { ...PLOTLY_LAYOUT.xaxis, title: indep }, yaxis: { ...PLOTLY_LAYOUT.yaxis, title: dep },
     legend: { font: { color: "#94a3b8" } },
   }, PLOTLY_CONFIG);
-  // Coefficients table
-  const coefRows = Object.entries(d.coefficients).map(([name, val]) => {
-    const pv = d.p_values[name];
-    const ci = d.conf_intervals[name];
-    return `<tr><td>${name}</td><td>${val}</td><td>${pv}</td><td>[${ci[0]}, ${ci[1]}]</td></tr>`;
-  }).join("");
+  
   document.getElementById("reg-results").innerHTML = `
-    <div class="stat-grid mt">${statBox("R²", d.r_squared)}${statBox("Adj R²", d.adj_r_squared)}
-      ${statBox("F-statistic", d.f_statistic)}${statBox("F p-value", d.f_pvalue)}</div>
-    <table class="coef-table mt"><thead><tr><th>Variable</th><th>Coefficient</th><th>P-value</th><th>95% CI</th></tr></thead>
-      <tbody>${coefRows}</tbody></table>
+    <div class="stat-grid mt">${statBox("R²", d.r_squared)}${statBox("Adj R²", d.adj_r_squared)}${statBox("Model P-value", d.f_pvalue)}</div>
     <div class="interpretation-box mt">${d.interpretation}</div>`;
 }
 
 async function runPrediction() {
   const dep = document.getElementById("reg-dep").value;
   const indep = document.getElementById("reg-indep").value;
-  const cat = document.getElementById("reg-cat").value;
   const value = parseFloat(document.getElementById("pred-value").value);
   if (isNaN(value)) { alert("Please enter a numeric value"); return; }
-  const d = await api("/api/predict", { method: "POST", body: { dependent: dep, independent: indep, categorical: cat, value } });
-  const rows = d.predictions.map((p) => `<tr><td>${p.category}</td><td>${p.predicted}</td></tr>`).join("");
+  const d = await api("/api/predict", { method: "POST", body: { dependent: dep, independent: indep, value } });
   document.getElementById("pred-results").innerHTML = `
-    <table class="mt"><thead><tr><th>${cat}</th><th>Predicted ${dep}</th></tr></thead><tbody>${rows}</tbody></table>
+    <div class="stat-grid mt"><div class="stat-item"><div class="stat-label">Predicted ${dep}</div><div class="stat-value">${d.prediction}</div></div></div>
     <div class="interpretation-box mt">${d.interpretation}</div>`;
 }
 

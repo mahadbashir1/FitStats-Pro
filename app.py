@@ -466,41 +466,31 @@ def regression():
     b = request.json
     dep = b.get("dependent")
     indep = b.get("independent")
-    cat = b.get("categorical")
     try:
-        temp = df[[dep, indep, cat]].dropna().copy()
-        temp = pd.get_dummies(temp, columns=[cat], drop_first=True, dtype=int)
+        temp = df[[dep, indep]].dropna().copy()
         y = temp[dep]
-        X = temp.drop(columns=[dep])
+        X = temp[[indep]]
         X = sm.add_constant(X)
         model = sm.OLS(y, X).fit()
         pred = model.predict(X).tolist()
         coefs = {}
         for name, val in model.params.items():
             coefs[name] = round(float(val), 4)
-        ci = model.conf_int()
-        ci_dict = {}
-        for name in ci.index:
-            ci_dict[name] = [round(float(ci.loc[name, 0]), 4), round(float(ci.loc[name, 1]), 4)]
-        pvalues = {name: round(float(v), 6) for name, v in model.pvalues.items()}
+        
         # Build interpretation
         indep_coef = coefs.get(indep, 0)
         unit_indep = DATASET_CONTEXT.get(indep, {}).get("what", indep)
         unit_dep = DATASET_CONTEXT.get(dep, {}).get("what", dep)
         r2_quality = "excellent" if model.rsquared > 0.7 else ("good" if model.rsquared > 0.5 else ("moderate" if model.rsquared > 0.3 else "weak"))
         interp = (f"R² = {model.rsquared:.4f} — the model explains {model.rsquared * 100:.1f}% of the variance in {dep} ({r2_quality} fit). "
-                  f"For every 1-unit increase in {indep} ({unit_indep}), {dep} ({unit_dep}) changes by {indep_coef:.4f} units, "
-                  f"holding {cat} constant. "
-                  f"The F-statistic p-value = {model.f_pvalue:.6f} {'confirms the model is statistically significant.' if model.f_pvalue < 0.05 else 'suggests the model may not be statistically significant.'}")
+                  f"For every 1-unit increase in {indep} ({unit_indep}), {dep} ({unit_dep}) changes by {indep_coef:.4f} units. "
+                  f"The model p-value = {model.f_pvalue:.6f} {'confirms it is statistically significant.' if model.f_pvalue < 0.05 else 'suggests it may not be statistically significant.'}")
         return jsonify({
-            "coefficients": coefs, "r_squared": round(float(model.rsquared), 4),
+            "r_squared": round(float(model.rsquared), 4),
             "adj_r_squared": round(float(model.rsquared_adj), 4),
-            "f_statistic": round(float(model.fvalue), 4),
             "f_pvalue": round(float(model.f_pvalue), 6),
-            "p_values": pvalues,
-            "conf_intervals": ci_dict,
             "actual": y.tolist(), "predicted": pred,
-            "dep": dep, "indep": indep, "cat": cat,
+            "dep": dep, "indep": indep,
             "x_values": temp[indep].tolist(),
             "interpretation": interp,
         })
@@ -511,30 +501,18 @@ def regression():
 @app.route("/api/predict", methods=["POST"])
 def predict():
     b = request.json
-    dep, indep, cat = b.get("dependent"), b.get("independent"), b.get("categorical")
+    dep, indep = b.get("dependent"), b.get("independent")
     value = float(b.get("value"))
-    temp = df[[dep, indep, cat]].dropna().copy()
-    temp = pd.get_dummies(temp, columns=[cat], drop_first=True, dtype=int)
+    temp = df[[dep, indep]].dropna().copy()
     y = temp[dep]
-    X = temp.drop(columns=[dep])
+    X = temp[[indep]]
     X = sm.add_constant(X)
     model = sm.OLS(y, X).fit()
-    dummy_cols = [c for c in X.columns if c not in ["const", indep]]
-    predictions = []
-    cats = df[cat].unique().tolist()
-    for cat_val in cats:
-        row = {"const": 1, indep: value}
-        for dc in dummy_cols:
-            row[dc] = 1 if dc.endswith(f"_{cat_val}") else 0
-        new_X = pd.DataFrame([row])[X.columns]
-        pred = model.predict(new_X)[0]
-        predictions.append({"category": str(cat_val), "predicted": round(float(pred), 4)})
-    pred_texts = "; ".join([f"{p['category']}: {p['predicted']}%" for p in predictions])
+    new_X = pd.DataFrame([{"const": 1, indep: value}])
+    pred = model.predict(new_X)[0]
     return jsonify({
-        "predictions": predictions, "value": value,
-        "interpretation": f"Based on the regression model, when {indep} = {value}, the predicted {dep} is: {pred_texts}. "
-                          f"This prediction uses the OLS regression equation with {cat} as a grouping factor. "
-                          f"Different {cat} categories yield different predictions because body composition differs between groups.",
+        "prediction": round(float(pred), 4), "value": value,
+        "interpretation": f"Based on the simple linear regression model, when {indep} = {value}, the predicted {dep} is {pred:.4f}. ",
     })
 
 
